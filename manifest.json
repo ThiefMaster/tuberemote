@@ -1,0 +1,25 @@
+{
+  "manifest_version": 2,
+  "name": "TubeRemote",
+  "version": "1.0",
+  "description": "Allow simple remote control through a local websocket server",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "tuberemote@aeum.net"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "permissions": [
+    "ws://127.0.0.1:12116/*",
+    "https://www.youtube.com/*",
+    "tabs"
+  ]
+}
