@@ -1,5 +1,10 @@
 'use strict';
 
+const STATE_OFFLINE = 'offline';
+const STATE_STOPPED = 'stopped';
+const STATE_PLAYING = 'playing';
+const STATE_PAUSED = 'paused';
+
 async function getActiveYoutubeTab() {
   const tabs = await browser.tabs.query({
     active: true,
@@ -93,13 +98,10 @@ function createSocket() {
 
     if (resp === null) {
       resp = {
-        available: false,
-        playing: false,
+        state: STATE_OFFLINE,
         volume: -1,
         actionFailed: isAction,
       };
-    } else {
-      resp = {available: true, ...resp};
     }
 
     ws.send(JSON.stringify(resp));

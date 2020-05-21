@@ -1,5 +1,18 @@
 'use strict';
 
+const STATE_STOPPED = 'stopped';
+const STATE_PLAYING = 'playing';
+const STATE_PAUSED = 'paused';
+
+const PLAYER_STATES = {
+  '-1': STATE_STOPPED, // unstarted
+  0: STATE_STOPPED, // ended
+  1: STATE_PLAYING, // playing
+  2: STATE_PAUSED, // paused
+  3: STATE_PLAYING, // buffering
+  5: STATE_STOPPED, // cued
+};
+
 function getPlayer() {
   const elem = document.querySelector('ytd-player');
   if (!elem) {
@@ -13,18 +26,27 @@ function getPlayer() {
   return elem.wrappedJSObject.getPlayer();
 }
 
-function isPlaying(player) {
-  return player !== null && player.getPlayerState() === 1;
+function getPlayerState(player) {
+  if (player === null) {
+    // we don't really know but let's not add yet another state for an unlikely error case :)
+    return STATE_STOPPED;
+  }
+  const state = player.getPlayerState();
+  if (PLAYER_STATES[state] === undefined) {
+    console.error(`Unexpected player state: ${state}`);
+    return STATE_STOPPED;
+  }
+  return PLAYER_STATES[state];
 }
 
 function togglePlayback() {
   const player = getPlayer();
   if (!player) {
-    return null;
+    return STATE_STOPPED;
   }
-  const playing = isPlaying(player);
+  const playing = getPlayerState(player) === STATE_PLAYING;
   player[playing ? 'pauseVideo' : 'playVideo']();
-  return !playing;
+  return playing ? STATE_PAUSED : STATE_PLAYING;
 }
 
 function changeVolume(delta) {
@@ -46,24 +68,24 @@ function seekBy(delta) {
 
 browser.runtime.onMessage.addListener(req => {
   const player = getPlayer();
-  let playing, volume;
+  let state, volume;
   if (req.action === 'getStatus') {
+    state = getPlayerState(player)
     volume = player.getVolume();
-    playing = isPlaying(player);
   } else if (req.action === 'togglePlayback') {
-    playing = togglePlayback();
+    state = togglePlayback();
     volume = player.getVolume();
   } else if (req.action === 'changeVolume') {
-    playing = isPlaying(player);
+    state = getPlayerState(player)
     volume = changeVolume(req.delta);
   } else if (req.action === 'seekBy') {
-    playing = isPlaying(player);
+    state = getPlayerState(player)
     volume = player.getVolume();
     seekBy(req.delta);
   }
 
   return Promise.resolve({
-    playing,
+    state,
     volume,
   });
 });
