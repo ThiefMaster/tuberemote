@@ -29,6 +29,14 @@ async function togglePlayback() {
   return await browser.tabs.sendMessage(tab, {action: 'togglePlayback'});
 }
 
+async function stopPlayback() {
+  const tab = await getActiveYoutubeTab();
+  if (tab === null) {
+    return null;
+  }
+  return await browser.tabs.sendMessage(tab, {action: 'stopPlayback'});
+}
+
 async function changeVolume(delta) {
   const tab = await getActiveYoutubeTab();
   if (tab === null) {
@@ -84,6 +92,8 @@ function createSocket() {
     let isAction = true;
     if (msg.action === 'togglePlayback') {
       resp = await togglePlayback();
+    } else if (msg.action === 'stopPlayback') {
+      resp = await stopPlayback();
     } else if (msg.action === 'changeVolume') {
       resp = await changeVolume(+msg.delta);
     } else if (msg.action === 'seekBy') {

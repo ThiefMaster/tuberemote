@@ -49,6 +49,16 @@ function togglePlayback() {
   return playing ? STATE_PAUSED : STATE_PLAYING;
 }
 
+function stopPlayback() {
+  const player = getPlayer();
+  if (!player) {
+    // no idea, but if we try to stop let's assume we're playing...
+    return STATE_PLAYING;
+  }
+  player.stopVideo();
+  return STATE_STOPPED;
+}
+
 function changeVolume(delta) {
   const player = getPlayer();
   if (!player) {
@@ -74,6 +84,9 @@ browser.runtime.onMessage.addListener(req => {
     volume = player.getVolume();
   } else if (req.action === 'togglePlayback') {
     state = togglePlayback();
+    volume = player.getVolume();
+  } else if (req.action === 'stopPlayback') {
+    state = stopPlayback();
     volume = player.getVolume();
   } else if (req.action === 'changeVolume') {
     state = getPlayerState(player)
