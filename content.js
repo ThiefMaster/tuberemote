@@ -14,7 +14,9 @@ const PLAYER_STATES = {
 };
 
 function getPlayer() {
-  const elem = document.querySelector('ytd-player');
+  // query by element and ID; otherwise we may end up getting the preview
+  // player from the home page
+  const elem = document.querySelector('ytd-player#ytd-player');
   if (!elem) {
     console.warn('<ytd-player> not found');
     return null;
